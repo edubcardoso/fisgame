@@ -1,5 +1,6 @@
 import pygame
 import random
+from time import sleep
 
 # Pygame Setup Stuff
 pygame.init()
@@ -13,6 +14,19 @@ running = True
 score = 0
 lives = 5
 speed = 5
+play_sound = True
+
+# DEFINE BACKGROUD MUSIC
+pygame.mixer.music.load('sounds/apita.wav')
+# PLAY BACKGROUND MUSIC
+pygame.mixer.music.set_volume(0.15)
+pygame.mixer.music.play(-1, 0.0)
+
+# DEFINE SOUND EFFECTS
+hit_sound = pygame.mixer.Sound('sounds/obg.wav')
+miss_sound = pygame.mixer.Sound('sounds/vaca.wav')
+game_over_sound = pygame.mixer.Sound('sounds/gozar.wav')
+
 
 dt = 0  # delta time
 player_pos = pygame.Vector2(screen.get_width()/2, screen.get_height() / 2)
@@ -85,24 +99,38 @@ while running:
 
     # CHECK IF WE'RE OUT OF LIVES
     if lives == 0:
+
+        sleep(1)
         screen.blit(game_over_text, game_over_text_rect)
         screen.blit(restart_game_text, restart_game_text_rect)
         # STOP FOOD
-        beer_rect.x = 0
-        beer_rect.y = 10000
+        beer_rect.x = WINDOW_WIDTH + 100
+        # beer_rect.y = 10000
+
+        if play_sound:
+            # PLAY GAME OVER SOUND
+            game_over_sound.play()
+            play_sound = False
+            # TURN OFF BG MUSIC
+            pygame.mixer.music.stop()
 
         # CHECK FOR 'P'
         keys = pygame.key.get_pressed()
         if keys[pygame.K_p]:
             score = 0
-            lives = 6
+            lives = 5
             speed = 5
+            play_sound = True
+            pygame.mixer.music.play(-1, 0.0)
+
             # RE-RENDER THE SCORE & LIVES
             score_text = score_font.render(f"Score: {score}", True, 'red')
             lives_text = lives_font.render(f"Lives: {lives}", True, 'red')
 
         # CHECK FOR COLLISIONS
     if hero_rect.colliderect(beer_rect):
+        # PLAY SOUND
+        hit_sound.play()
         # PUSH THE IMAGE
         # beer.fill(0)  MAKE THE IMAGE BLANK
         score += 1
@@ -121,9 +149,11 @@ while running:
         player_pos.y -= (speed*30) * dt
     if keys[pygame.K_DOWN] and player_pos.y < WINDOW_HEIGHT - hero.get_height() - 5:
         player_pos.y += (speed*30) * dt
-        # sound_1.play()
+
     # MOVE BEER
     if beer_rect.x < 0:
+        # PLAY SOUND
+        miss_sound.play()
         # CESAR MISSED THE FOOD
         lives -= 1
         lives_text = lives_font.render(f"Lives: {lives}", True, 'red')
@@ -145,7 +175,7 @@ while running:
     pygame.display.flip()
 
     # SET THE CLOCK STUFF / DELTA TIME IN SECONDS SINCE THE LAST FRAME
-    # USED FROM FRAMERATE INDEPENDENT OF PHYSICS
+    # USED FROM FRAME RATE INDEPENDENT OF PHYSICS
     dt = clock.tick(60)/1000
 
 
