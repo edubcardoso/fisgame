@@ -26,13 +26,41 @@ class Game:
     def __init__(self, fisga_group_, beer_group_):
         self.fisga_group = fisga_group_
         self.beer_group = beer_group_
+        self.score = 0
 
     def update(self):
         self.check_collisions()
+        self.draw()
+
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_p]:
+            self.pause_game()
+
+    def draw(self):
+        # DRAW A BOUNDARY BOX
+        pygame.draw.rect(screen, 'red', (0, 100, WINDOW_WIDTH, WINDOW_HEIGHT-200), 4)
+
+    def pause_game(self):
+        print(self)
+        global running
+        is_paused = True
+        # CREATE PAUSED GROUP
+        while is_paused:
+            # ACCOUNT FOR HITTING ENTER WHILE ON PAUSE TO UNPAUSE
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        is_paused = False
+                # ACCOUNT FOR CLICKING THE X TO QUIT
+                if event.type == pygame.QUIT:
+                    is_paused = False
+                    running = False
+                    # pygame.quit()
 
     def check_collisions(self):
         if pygame.sprite.groupcollide(self.fisga_group, self.beer_group, False, True):
-            print(len(self.beer_group))
+            self.score += 1
+            print(self.score)
 
 
 # DEFINE A SPRITE CLASS
@@ -68,22 +96,31 @@ class Beer(pygame.sprite.Sprite):
         # Get Rectangle
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
-        self.velocity = random.randint(1, 3)
+        self.velocity = random.randint(1, 5)
+        self.dx = random.choice([-1, 1])
+        self.dy = random.choice([-1, 1])
 
     def update(self):
-        self.rect.y += self.velocity
+        # self.rect.y += self.velocity
+        self.rect.x += self.dx * self.velocity
+        self.rect.y += self.dy * self.velocity
+        # KEEP FROM LEAVING THE SCREEN
+        if self.rect.left <= -1 or self.rect.right >= WINDOW_WIDTH:
+            self.dx = -1 * self.dx
+        if self.rect.top <= 100 or self.rect.bottom >= 500:
+            self.dy = -1 * self.dy
 
 
 # CREATE A HERO GROUP
 beer_group = pygame.sprite.Group()
 for i in range(10):
-    beer_ = Beer(i*100, 10)
+    beer_ = Beer(i*100, 110)
     beer_group.add(beer_)
 
 # CREATE FISGA GROUP
 fisga_group = pygame.sprite.Group()
 # CREATE AND POSITION FISGA
-fisga_ = Fisga(200, 400)
+fisga_ = Fisga(200, 500)
 # ADD FISGA TO THE GROUP
 fisga_group.add(fisga_)
 
