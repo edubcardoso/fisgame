@@ -23,22 +23,10 @@ player_pos = pygame.Vector2(screen.get_width()/2, screen.get_height() / 2)
 
 # DEFINE A GAME CLASS
 class Game:
-    def __init__(self, fisga_group_, drink_group_):
+    def __init__(self, fisga_group_, beer_group_):
         self.fisga_group = fisga_group_
-        self.drink_group = drink_group_
+        self.beer_group = beer_group_
         self.score = 0
-        self.lives = 5
-        # DEFINE FONTS
-        self.small_font = pygame.font.SysFont("imapact", 24)
-        self.big_font = pygame.font.SysFont("imapact", 60)
-        # DEFINE IMAGES
-        beer = pygame.image.load("images/beer.png")
-        water = pygame.image.load("images/water.png")
-        # ADD DRINKS to a GROUP
-        # TYPE 0=WATER, 1=BEER
-        for i in range(7):
-            self.drink_group.add(Drink(i*50+50, 190, water, 0))
-        self.drink_group.add(Drink(200, 200, beer, 1))
 
     def update(self):
         self.check_collisions()
@@ -51,32 +39,6 @@ class Game:
     def draw(self):
         # DRAW A BOUNDARY BOX
         pygame.draw.rect(screen, 'red', (0, 100, WINDOW_WIDTH, WINDOW_HEIGHT-200), 4)
-        # CREATE TEXT
-        title_text = self.big_font.render('DRINK BEER', True, "red")
-        title_rect = title_text.get_rect()
-        title_rect.centerx = WINDOW_WIDTH / 2
-        title_rect.top = 5
-
-        win_text = self.big_font.render('YOU WIN!!!', True, "black")
-        win_rect = win_text.get_rect()
-        win_rect.centerx = WINDOW_WIDTH / 2
-        win_rect.centery = WINDOW_HEIGHT / 2
-
-        score_text = self.small_font.render(f'Score: {self.score}', True, "red")
-        score_rect = score_text.get_rect()
-        score_rect.topleft = (5, 5)
-
-        lives_text = self.small_font.render(f'Lives: {self.lives}', True, "red")
-        lives_rect = lives_text.get_rect()
-        lives_rect.topright = (WINDOW_WIDTH - 5, 5)
-
-        # BLIT THE TEXT
-        screen.blit(title_text, title_rect)
-        screen.blit(score_text, score_rect)
-        screen.blit(lives_text, lives_rect)
-
-        if self.score == 9:
-            screen.blit(win_text, win_rect)
 
     def pause_game(self):
         print(self)
@@ -96,15 +58,9 @@ class Game:
                     # pygame.quit()
 
     def check_collisions(self):
-        caught_drink = pygame.sprite.spritecollideany(self.fisga_group, self.drink_group)
-        if caught_drink:
-            # IF IS BEER
-            if caught_drink.drink_type == 0:
-                self.lives -= 1
-                self.fisga_group.reset()
-            else:
-                caught_drink.remove(self.drink_group)
-                self.score += 1
+        if pygame.sprite.groupcollide(self.fisga_group, self.beer_group, False, True):
+            self.score += 1
+            print(self.score)
 
 
 # DEFINE A SPRITE CLASS
@@ -122,33 +78,27 @@ class Fisga(pygame.sprite.Sprite):
 
     def move(self):
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT] and self.rect.x >= 10:
+        if keys[pygame.K_LEFT]:
             self.rect.x -= self.velocity
-        if keys[pygame.K_RIGHT] and self.rect.x <= WINDOW_WIDTH - 105:
+        if keys[pygame.K_RIGHT]:
             self.rect.x += self.velocity
-        if keys[pygame.K_UP] and self.rect.y >= 100:
+        if keys[pygame.K_UP]:
             self.rect.y -= self.velocity
-        if keys[pygame.K_DOWN] and self.rect.y <= WINDOW_HEIGHT - 105:
+        if keys[pygame.K_DOWN]:
             self.rect.y += self.velocity
 
-    # MOVE FISGA TO UNDE THE BOX
-    def reset(self):
-        self.rect.topleft = ((WINDOW_WIDTH/2)-50, 510)
 
-
-class Drink(pygame.sprite.Sprite):
-    def __init__(self, x, y, image, drink_type):
+class Beer(pygame.sprite.Sprite):
+    def __init__(self, x, y):
         super().__init__()
         # Define our image
-        self.image = image
+        self.image = pygame.image.load("images/beer.png")
         # Get Rectangle
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
         self.velocity = random.randint(1, 5)
         self.dx = random.choice([-1, 1])
         self.dy = random.choice([-1, 1])
-        # DRINK TYPE 0=water, 1=beer
-        self.drink_type = drink_type
 
     def update(self):
         # self.rect.y += self.velocity
@@ -162,17 +112,20 @@ class Drink(pygame.sprite.Sprite):
 
 
 # CREATE A HERO GROUP
-drink_group = pygame.sprite.Group()
+beer_group = pygame.sprite.Group()
+for i in range(10):
+    beer_ = Beer(i*100, 110)
+    beer_group.add(beer_)
 
 # CREATE FISGA GROUP
 fisga_group = pygame.sprite.Group()
 # CREATE AND POSITION FISGA
-fisga_ = Fisga((WINDOW_WIDTH/2)-50, 510)
+fisga_ = Fisga(200, 500)
 # ADD FISGA TO THE GROUP
 fisga_group.add(fisga_)
 
 # CREATE GAME OBJECT
-our_game = Game(fisga_, drink_group)
+our_game = Game(fisga_group, beer_group)
 
 while running:
     # poll for events
@@ -186,8 +139,8 @@ while running:
     screen.fill("#F5DADF")
 
     # DRAW AND MOVE HERO SPRITE
-    drink_group.update()
-    drink_group.draw(screen)
+    beer_group.update()
+    beer_group.draw(screen)
     fisga_group.update()
     fisga_group.draw(screen)
 
