@@ -28,25 +28,17 @@ class Game:
         self.drink_group = drink_group_
         self.score = 0
         self.lives = 5
-
         # DEFINE FONTS
         self.small_font = pygame.font.SysFont("imapact", 24)
         self.big_font = pygame.font.SysFont("imapact", 60)
-
         # DEFINE IMAGES
         beer = pygame.image.load("images/beer.png")
         water = pygame.image.load("images/water.png")
-
         # ADD DRINKS to a GROUP
         # TYPE 0=WATER, 1=BEER
-        self.drink_group.add(Drink(200, 200, beer, 1))
         for i in range(7):
             self.drink_group.add(Drink(i*50+50, 190, water, 0))
-
-        # DEFINE OUR SOUNDS
-        self.score_sound = pygame.mixer.Sound('sounds/obg.wav')
-        self.die_sound = pygame.mixer.Sound('sounds/vaca.wav')
-        self.game_over_sound = pygame.mixer.Sound('sounds/gozar.wav')
+        self.drink_group.add(Drink(200, 200, beer, 1))
 
     def update(self):
         self.check_collisions()
@@ -108,15 +100,9 @@ class Game:
         if caught_drink:
             # IF IS BEER
             if caught_drink.drink_type == 0:
-                # PLAY DIE SOUND
-                self.die_sound.play()
                 self.lives -= 1
                 self.fisga_group.reset()
-                if self.lives == 0:
-                    self.game_over_sound.play()
             else:
-                # PLAY SCORE SOUND
-                self.score_sound.play()
                 caught_drink.remove(self.drink_group)
                 self.score += 1
 
