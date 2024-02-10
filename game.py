@@ -34,14 +34,14 @@ class Game:
         self.big_font = pygame.font.SysFont("imapact", 60)
 
         # DEFINE IMAGES
-        beer = pygame.image.load("images/beer.png")
-        water = pygame.image.load("images/water.png")
+        self.beer = pygame.image.load("images/beer.png")
+        self.water = pygame.image.load("images/water.png")
 
         # ADD DRINKS to a GROUP
         # TYPE 0=WATER, 1=BEER
-        self.drink_group.add(Drink(200, 200, beer, 1))
+        self.drink_group.add(Drink(200, 200, self.beer, 1))
         for i in range(7):
-            self.drink_group.add(Drink(i*50+50, 190, water, 0))
+            self.drink_group.add(Drink(i*50+50, 190, self.water, 0))
 
         # DEFINE OUR SOUNDS
         self.score_sound = pygame.mixer.Sound('sounds/obg.wav')
@@ -83,7 +83,7 @@ class Game:
         screen.blit(score_text, score_rect)
         screen.blit(lives_text, lives_rect)
 
-        if self.score == 9:
+        if self.score == 7:
             screen.blit(win_text, win_rect)
 
     def pause_game(self):
@@ -119,6 +119,16 @@ class Game:
                 self.score_sound.play()
                 caught_drink.remove(self.drink_group)
                 self.score += 1
+                # LOGIC to REMOVE WATER and ADD BEER
+                if len(self.drink_group) > 0:
+                    # RANDOMLY REMOVE WATER FROM SPRITES in DRINK GROUP
+                    random.choice(self.drink_group.sprites()).kill()
+                    # ADD A NEW BEER - TRANFORM WATER IN BEER
+                    if len(self.drink_group) >= 1:
+                        self.drink_group.add(Drink(190, 200, self.beer, 1))
+                    else:
+                        self.fisga_group.reset()
+                        self.game_over_sound.play()
 
 
 # DEFINE A SPRITE CLASS
@@ -142,7 +152,7 @@ class Fisga(pygame.sprite.Sprite):
             self.rect.x += self.velocity
         if keys[pygame.K_UP] and self.rect.y >= 100:
             self.rect.y -= self.velocity
-        if keys[pygame.K_DOWN] and self.rect.y <= WINDOW_HEIGHT - 105:
+        if keys[pygame.K_DOWN] and self.rect.y <= WINDOW_HEIGHT - 95:
             self.rect.y += self.velocity
 
     # MOVE FISGA TO UNDE THE BOX
