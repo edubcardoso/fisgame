@@ -39,7 +39,7 @@ class Game:
 
         # ADD DRINKS to a GROUP
         # TYPE 0=WATER, 1=BEER
-        self.drink_group.add(Drink(200, 200, self.beer, 1))
+        self.drink_group.add(Drink(random.randint(20, 800), random.randint(100, 400), self.beer, 1))
         for i in range(7):
             self.drink_group.add(Drink(i*50+50, 190, self.water, 0))
 
@@ -65,10 +65,20 @@ class Game:
         title_rect.centerx = WINDOW_WIDTH / 2
         title_rect.top = 5
 
-        win_text = self.big_font.render('YOU WIN!!!', True, "black")
+        win_text = self.big_font.render('YOU WON!!!', True, "black")
         win_rect = win_text.get_rect()
         win_rect.centerx = WINDOW_WIDTH / 2
-        win_rect.centery = WINDOW_HEIGHT / 2
+        win_rect.centery = WINDOW_HEIGHT / 2 - 100
+
+        lose_text = self.big_font.render('YOU LOST!!!', True, "orange")
+        lose_rect = lose_text.get_rect()
+        lose_rect.centerx = WINDOW_WIDTH / 2
+        lose_rect.centery = WINDOW_HEIGHT / 2 - 100
+
+        restart_text = self.big_font.render('Press Enter to Play Again', True, "black")
+        restart_rect = restart_text.get_rect()
+        restart_rect.centerx = WINDOW_WIDTH / 2
+        restart_rect.centery = WINDOW_HEIGHT / 2
 
         score_text = self.small_font.render(f'Score: {self.score}', True, "red")
         score_rect = score_text.get_rect()
@@ -85,6 +95,27 @@ class Game:
 
         if self.score == 7:
             screen.blit(win_text, win_rect)
+            screen.blit(restart_text, restart_rect)
+            self.game_over()
+
+        if self.lives <= 0:
+            screen.blit(lose_text, lose_rect)
+            screen.blit(restart_text, restart_rect)
+            self.drink_group.remove(drink_group)  # REMOVE ANY REMAINING FOOD
+            self.game_over()
+
+    def game_over(self):
+        self.fisga_group.reset()
+        # CHECK FOR RESTART ENTER
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_RETURN]:
+            # RESET NUMBERS
+            self.score = 0
+            self.lives = 5
+            # ADD NEW
+            self.drink_group.add(Drink(random.randint(20, 800), random.randint(100, 400), self.beer, 1))
+            for i in range(7):
+                self.drink_group.add(Drink(i * 50 + 50, 190, self.water, 0))
 
     def pause_game(self):
         print(self)
@@ -93,12 +124,12 @@ class Game:
         # CREATE PAUSED GROUP
         while is_paused:
             # ACCOUNT FOR HITTING ENTER WHILE ON PAUSE TO UNPAUSE
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
+            for event_ in pygame.event.get():
+                if event_.type == pygame.KEYDOWN:
+                    if event_.key == pygame.K_RETURN:
                         is_paused = False
                 # ACCOUNT FOR CLICKING THE X TO QUIT
-                if event.type == pygame.QUIT:
+                if event_.type == pygame.QUIT:
                     is_paused = False
                     running = False
                     # pygame.quit()
@@ -125,7 +156,7 @@ class Game:
                     random.choice(self.drink_group.sprites()).kill()
                     # ADD A NEW BEER - TRANFORM WATER IN BEER
                     if len(self.drink_group) >= 1:
-                        self.drink_group.add(Drink(190, 200, self.beer, 1))
+                        self.drink_group.add(Drink(random.randint(20, 800), random.randint(100, 400), self.beer, 1))
                     else:
                         self.fisga_group.reset()
                         self.game_over_sound.play()
